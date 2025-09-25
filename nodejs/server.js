@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/', express.static('www'));
 
-app.get('/api/points', (req, res) => {
+app.get('/usc/api/points', (req, res) => {
         //create geojson data from class_and_pollution table and select id column only
         const sql = `SELECT jsonb_build_object(
                 'type', 'FeatureCollection',
@@ -41,7 +41,7 @@ app.get('/api/points', (req, res) => {
         });
 });
 
-app.get('/api/points/:id', (req, res) => {
+app.get('/usc/api/points/:id', (req, res) => {
         const id = req.params.id;
         const sql = `SELECT * FROM class_and_pollution WHERE id = $1`;
         pool.query(sql, [id], (err, result) => {
@@ -58,7 +58,7 @@ app.get('/api/points/:id', (req, res) => {
         });
 });
 
-app.get('/api/sathonpoints', (req, res) => {
+app.get('/usc/api/sathonpoints', (req, res) => {
         //create geojson data from class_and_pollution table and select id column only
         const sql = `SELECT jsonb_build_object(
                 'type', 'FeatureCollection',
@@ -83,7 +83,7 @@ app.get('/api/sathonpoints', (req, res) => {
         });
 });
 
-app.get('/api/sathonpoints/:id', (req, res) => {
+app.get('/usc/api/sathonpoints/:id', (req, res) => {
         const id = req.params.id;
         const sql = `SELECT * FROM sathonpoint_azimuth_4326 WHERE id = $1`;
         pool.query(sql, [id], (err, result) => {

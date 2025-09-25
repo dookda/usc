@@ -4,7 +4,7 @@ services:
     platform: linux/amd64
     container_name: usc_postgis
     ports:
-      - "6503:5432"
+      - "6505:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
@@ -34,7 +34,7 @@ services:
     depends_on:
       - postgis
     ports:
-      - "6505:3000"
+      - "6503:3000"
     volumes:
       - ./nodejs:/app
     command: /bin/bash -c "npm install && npm i -g nodemon && nodemon app.js"

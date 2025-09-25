@@ -399,7 +399,7 @@
 
     async function showChartOverlay(x) {
       try {
-        const result = await fetch(`http://localhost:6505/api/points/${x.id}`);
+        const result = await fetch(`http://localhost:6503/usc/api/points/${x.id}`);
         const p = await result.json();
 
         console.log(p);
@@ -501,7 +501,7 @@
         }
       });
 
-      map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:6505/api/points' });
+      map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:6503/usc/api/points' });
       map.addLayer({
         id: 'pollution-3d',
         type: 'circle',

@@ -167,7 +167,7 @@
 
                 async function predictFromStreetView(url) {
                         console.log("Sending URL to prediction API:", url);
-                        const res = await fetch("http://localhost:5100/predict_url", {
+                        const res = await fetch("http://localhost:6504/predict_url", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ url })
@@ -197,7 +197,7 @@
                                 }
                         });
 
-                        map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:3000/api/sathonpoints' });
+                        map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:6503/usc/api/sathonpoints' });
                         map.addLayer({
                                 id: 'pollution-3d',
                                 type: 'circle',
