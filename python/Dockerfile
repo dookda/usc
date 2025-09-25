@@ -16,11 +16,14 @@ COPY requirements.txt .
 # ติดตั้ง torch/torchvision
 RUN pip install --no-cache-dir torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
 
-# Fix numpy ให้เข้ากับ torch
-RUN pip install --no-cache-dir "numpy<2"
-
 # ติดตั้ง dependencies อื่น ๆ
-RUN pip install --no-cache-dir -r requirements.txt
+# before installing requirements
+RUN python -m pip install -U pip setuptools wheel
+
+# cache pip downloads between builds + longer timeout/retries
+RUN --mount=type=cache,target=/root/.cache/pip \
+        pip install --prefer-binary --timeout 600 --retries 10 -r requirements.txt
+
 
 # คัดลอกโค้ดที่เหลือ
 COPY . .
