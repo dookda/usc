@@ -399,7 +399,7 @@
 
     async function showChartOverlay(x) {
       try {
-        const result = await fetch(`http://localhost:6503/usc/api/points/${x.id}`);
+        const result = await fetch(`/usc/api/points/${x.id}`);
         const p = await result.json();
 
         console.log(p);
@@ -470,18 +470,6 @@
       antialias: true
     });
 
-    async function predictFromStreetView(url) {
-      const res = await fetch("http://localhost:6504/usc_api/predict_url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-      const data = await res.json();
-      console.log("Predictions:", data.boxes);
-      document.getElementById("result").src = data.annotated_image_base64;
-    }
-
-
     map.on('load', () => {
       map.addSource('openfreemap', { url: 'https://tiles.openfreemap.org/planet', type: 'vector' });
       map.addLayer({
@@ -501,7 +489,7 @@
         }
       });
 
-      map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:6503/usc/api/points' });
+      map.addSource('pollution-points', { type: 'geojson', data: '/usc/api/points' });
       map.addLayer({
         id: 'pollution-3d',
         type: 'circle',
@@ -588,13 +576,13 @@
         const API_KEY = "AIzaSyAIry0CIsrbZz25K13Hx7k0RADrQKgsml4";
         const lat = p.lat;  // Example: Chiang Mai
         const lng = p.lon;
-        const heading = 65; //p.azimuth;
+        const heading = p.azimuth; //p.azimuth;
         const pitch = 0;
         const size = "640x640";
 
-        const url = `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${lat_},${lng}&heading=${heading}&pitch=${pitch}&key=${API_KEY}`;
-        console.log('Fetching image from URL:', url);
-        // predictFromStreetView(url)
+        const url = `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${lat},${lng}&heading=${heading}&pitch=${pitch}&key=${API_KEY}`;
+        // console.log('Fetching image from URL:', url);
+
         //const response = await fetch(url);
         //if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
 

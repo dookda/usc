@@ -167,14 +167,16 @@
 
                 async function predictFromStreetView(url) {
                         console.log("Sending URL to prediction API:", url);
-                        const res = await fetch("http://localhost:6504/predict_url", {
+                        const res = await fetch("https://geodev.fun/usc_api/predict_url", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ url })
                         });
                         const data = await res.json();
                         console.log("Predictions:", data);
-                        document.getElementById("result").src = data.annotated_image_base64;
+                        // document.getElementById("result").src = data.annotated_image_base64;
+                        document.getElementById("class").innerText = `${data.boxes[0].class_name}`;
+                        document.getElementById("conf").innerText = `${data.boxes[0].confidence.toFixed(3)}`;
                 }
 
 
@@ -197,7 +199,7 @@
                                 }
                         });
 
-                        map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:6503/usc/api/sathonpoints' });
+                        map.addSource('pollution-points', { type: 'geojson', data: '/usc/api/sathonpoints' });
                         map.addLayer({
                                 id: 'pollution-3d',
                                 type: 'circle',
@@ -222,7 +224,7 @@
                         map.on('click', 'pollution-3d', async (e) => {
                                 const p = e.features[0].properties;
 
-                                console.log('Feature properties:', p);
+                                // console.log('Feature properties:', p);
                                 const API_KEY = "AIzaSyAIry0CIsrbZz25K13Hx7k0RADrQKgsml4";
                                 const lat = p.lat;  // Example: Chiang Mai
                                 const lng = p.lon;
@@ -231,35 +233,35 @@
                                 const size = "640x640";
 
                                 const url = `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${lat},${lng}&heading=${heading}&pitch=${pitch}&key=${API_KEY}`;
-                                console.log('Fetching image from URL:', url);
-                                predictFromStreetView(url)
-                                //const response = await fetch(url);
+                                // console.log('Fetching image from URL:', url);
+                                predictFromStreetView(url);
+
                                 //if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
 
                                 const popupContent = `
-    <div style="min-width:220px;max-width:330px;">
-      <div style="background:#1976d2;color:#fff;padding:9px 16px;border-radius:8px 8px 0 0;font-size:1.1em;">
-        <b>รายละเอียด</b>
-      </div>
-      <div style="background:#fff;padding:13px 16px;border-radius:0 0 8px 8px;box-shadow:0 2px 7px #e5e7ef;">
-        <div><b>Latitude:</b> ${p.latitude || '-'}</div>
-        <div><b>Longitude:</b> ${p.longitude || '-'}</div>
-        <hr>
-        <div><b>Label:</b> ${escapeHtml(p.label) || '-'}</div>
-        <div><b>Conf:</b> ${p.conf || '-'}</div>
+                                        <div style="min-width:220px;max-width:330px;">
+                                        <div style="background:#1976d2;color:#fff;padding:9px 16px;border-radius:8px 8px 0 0;font-size:1.1em;">
+                                                <b>รายละเอียด</b>
+                                        </div>
+                                        <div style="background:#fff;padding:13px 16px;border-radius:0 0 8px 8px;box-shadow:0 2px 7px #e5e7ef;">
+                                                <div><b>Latitude:</b> ${p.lat || '-'}</div>
+                                                <div><b>Longitude:</b> ${p.lon || '-'}</div>
+                                                <hr>
+                                                <div><b>Label:</b>&nbsp;<span id="class"></span></div>
+                                                <div><b>Conf:</b>&nbsp;<span id="conf"></span></div>
 
-        <img src="${url}"
-             alt="H/W Ratio"
-             style="width:100%;margin-top:8px;border-radius:6px;box-shadow:0 2px 6px #ccc;">
-        <hr>
-        <button id="showFullChartBtn"
-                style="margin-top:12px;width:100%;background:#22b28a;color:#fff;border:none;border-radius:6px;padding:9px 0;cursor:pointer;font-size:1.05em;">
-          <b>Show Air Data</b>
-        </button>
-      </div>
-    </div>
-  `;
-                                console.log(e.features);
+                                                <img src="${url}"
+                                                alt="H/W Ratio"
+                                                style="width:100%;margin-top:8px;border-radius:6px;box-shadow:0 2px 6px #ccc;">
+                                                <hr>
+                                                <button id="showFullChartBtn"
+                                                        style="margin-top:12px;width:100%;background:#22b28a;color:#fff;border:none;border-radius:6px;padding:9px 0;cursor:pointer;font-size:1.05em;">
+                                                <b>Show Air Data</b>
+                                                </button>
+                                        </div>
+                                        </div>
+                                `;
+                                // console.log(e.features);
                                 const popup = new maplibregl.Popup({ offset: 25 })
                                         .setLngLat(e.features[0].geometry.coordinates)
                                         .setHTML(popupContent)

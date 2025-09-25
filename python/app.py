@@ -1,11 +1,14 @@
 # app.py
+from fastapi import Body
+import requests
+from ultralytics import YOLO
 import io
 import base64
 from typing import Optional, List, Dict, Any
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel 
+from pydantic import BaseModel
 
 import numpy as np
 from PIL import Image
@@ -22,15 +25,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def home():
     return {"msg": "api is working!"}
 
+
 # Ultralytics YOLO
-from ultralytics import YOLO
 
 # Will be set on startup
 MODEL: Optional[YOLO] = None
+
 
 class Box(BaseModel):
     xmin: float
@@ -41,11 +46,13 @@ class Box(BaseModel):
     class_id: int
     class_name: str
 
+
 class PredictionResponse(BaseModel):
     boxes: List[Box]
-    #cannotated_image_base64: Optional[str] = None  # data:image/png;base64,...
+    # cannotated_image_base64: Optional[str] = None  # data:image/png;base64,...
     width: int
     height: int
+
 
 @app.on_event("startup")
 def load_model():
@@ -55,9 +62,11 @@ def load_model():
     # Optionally run a dry run to warm up (small image)
     # MODEL.predict(source=np.zeros((640,640,3), dtype=np.uint8), imgsz=640, conf=0.25)
 
+
 def read_imagefile(file) -> np.ndarray:
     image = Image.open(io.BytesIO(file)).convert("RGB")
     return np.array(image)
+
 
 def draw_boxes(image: np.ndarray, boxes: List[Dict[str, Any]], names: Dict[int, str]) -> np.ndarray:
     img = image.copy()
@@ -71,15 +80,18 @@ def draw_boxes(image: np.ndarray, boxes: List[Dict[str, Any]], names: Dict[int, 
         # text background
         (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         cv2.rectangle(img, (x1, y1 - th - 6), (x1 + tw, y1), (0, 255, 0), -1)
-        cv2.putText(img, label, (x1, y1 - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(img, label, (x1, y1 - 4),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
     return img
+
 
 @app.post("/usc_api/predict", response_model=PredictionResponse)
 async def predict_image(
     file: UploadFile = File(...),
     conf: float = Query(0.25, description="Confidence threshold (0-1)"),
     iou: float = Query(0.45, description="NMS IoU threshold (0-1)"),
-    imgsz: int = Query(640, description="Resize short side to this (recommended 320/640/1280)")
+    imgsz: int = Query(
+        640, description="Resize short side to this (recommended 320/640/1280)")
 ):
     """
     Upload an image file (multipart/form-data) and get YOLO predictions.
@@ -97,7 +109,8 @@ async def predict_image(
 
     # Run prediction
     # Ultralytics API: results = MODEL.predict(source=..., imgsz=..., conf=..., iou=...)
-    results = MODEL.predict(source=img, imgsz=imgsz, conf=conf, iou=iou, verbose=False)
+    results = MODEL.predict(source=img, imgsz=imgsz,
+                            conf=conf, iou=iou, verbose=False)
 
     if len(results) == 0:
         # No predictions (rare)
@@ -111,7 +124,8 @@ async def predict_image(
             xyxy = res.boxes.xyxy.cpu().numpy()  # shape (n,4)
             confs = res.boxes.conf.cpu().numpy()  # shape (n,)
             cls_ids = res.boxes.cls.cpu().numpy().astype(int)  # shape (n,)
-            names = MODEL.model.names if hasattr(MODEL, "model") and hasattr(MODEL.model, "names") else {}
+            names = MODEL.model.names if hasattr(
+                MODEL, "model") and hasattr(MODEL.model, "names") else {}
             for (x1, y1, x2, y2), c, cls in zip(xyxy, confs, cls_ids):
                 boxes.append({
                     "xmin": float(x1),
@@ -124,11 +138,10 @@ async def predict_image(
                 })
 
     # Annotated image
-    annotated_np = draw_boxes(img, boxes, MODEL.model.names if hasattr(MODEL, "model") and hasattr(MODEL.model, "names") else {})
+    annotated_np = draw_boxes(img, boxes, MODEL.model.names if hasattr(
+        MODEL, "model") and hasattr(MODEL.model, "names") else {})
     # Convert BGR/RGB: our img is RGB from PIL -> np array; cv2 uses
 
-import requests
-from fastapi import Body
 
 @app.post("/usc_api/predict_url", response_model=PredictionResponse)
 async def predict_image_from_url(
@@ -144,19 +157,21 @@ async def predict_image_from_url(
     global MODEL
     if MODEL is None:
         raise HTTPException(status_code=503, detail="Model not loaded yet")
-    
+
     try:
         response = requests.get(url)
         response.raise_for_status()
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Could not download image: {e}")
-    
+        raise HTTPException(
+            status_code=400, detail=f"Could not download image: {e}")
+
     try:
         img = read_imagefile(response.content)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid image data: {e}")
 
-    results = MODEL.predict(source=img, imgsz=imgsz, conf=conf, iou=iou, verbose=False)
+    results = MODEL.predict(source=img, imgsz=imgsz,
+                            conf=conf, iou=iou, verbose=False)
 
     boxes = []
     if len(results):
@@ -164,7 +179,8 @@ async def predict_image_from_url(
         xyxy = res.boxes.xyxy.cpu().numpy()
         confs = res.boxes.conf.cpu().numpy()
         cls_ids = res.boxes.cls.cpu().numpy().astype(int)
-        names = MODEL.model.names if hasattr(MODEL, "model") and hasattr(MODEL.model, "names") else {}
+        names = MODEL.model.names if hasattr(
+            MODEL, "model") and hasattr(MODEL.model, "names") else {}
         for (x1, y1, x2, y2), c, cls in zip(xyxy, confs, cls_ids):
             boxes.append({
                 "xmin": float(x1),
@@ -176,7 +192,8 @@ async def predict_image_from_url(
                 "class_name": names.get(cls, str(cls))
             })
 
-    annotated_np = draw_boxes(img, boxes, MODEL.model.names if hasattr(MODEL, "model") else {})
+    annotated_np = draw_boxes(
+        img, boxes, MODEL.model.names if hasattr(MODEL, "model") else {})
     _, buffer = cv2.imencode(".png", annotated_np[:, :, ::-1])
     b64 = base64.b64encode(buffer.tobytes()).decode("utf-8")
     data_uri = f"data:image/png;base64,{b64}"

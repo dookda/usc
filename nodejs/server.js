@@ -29,7 +29,7 @@ app.get('/usc/api/points', (req, res) => {
                         'geometry', ST_AsGeoJSON(geom)::jsonb,
                         'properties', to_jsonb(inputs) -- 'geom'
                 ) AS feature
-                FROM (SELECT id, lat_, lon_, lat, lon, label, conf, geom FROM class_and_pollution) inputs
+                FROM (SELECT id, lat, lon, label, conf, azimuth, geom FROM t_class_and_pollution) inputs
         ) features;`;
         pool.query(sql, (err, result) => {
                 if (err) {
@@ -43,7 +43,7 @@ app.get('/usc/api/points', (req, res) => {
 
 app.get('/usc/api/points/:id', (req, res) => {
         const id = req.params.id;
-        const sql = `SELECT * FROM class_and_pollution WHERE id = $1`;
+        const sql = `SELECT * FROM t_class_and_pollution WHERE id = $1`;
         pool.query(sql, [id], (err, result) => {
                 if (err) {
                         console.error(err);
