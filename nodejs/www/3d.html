@@ -399,7 +399,7 @@
 
     async function showChartOverlay(x) {
       try {
-        const result = await fetch(`http://localhost:3000/api/points/${x.id}`);
+        const result = await fetch(`http://localhost:6505/api/points/${x.id}`);
         const p = await result.json();
 
         console.log(p);
@@ -471,7 +471,7 @@
     });
 
     async function predictFromStreetView(url) {
-      const res = await fetch("http://localhost:8000/predict_url", {
+      const res = await fetch("http://localhost:6504/usc_api/predict_url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
@@ -501,7 +501,7 @@
         }
       });
 
-      map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:3000/api/points' });
+      map.addSource('pollution-points', { type: 'geojson', data: 'http://localhost:6505/api/points' });
       map.addLayer({
         id: 'pollution-3d',
         type: 'circle',

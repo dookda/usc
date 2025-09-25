@@ -74,7 +74,7 @@ def draw_boxes(image: np.ndarray, boxes: List[Dict[str, Any]], names: Dict[int, 
         cv2.putText(img, label, (x1, y1 - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
     return img
 
-@app.post("/predict", response_model=PredictionResponse)
+@app.post("/usc_api/predict", response_model=PredictionResponse)
 async def predict_image(
     file: UploadFile = File(...),
     conf: float = Query(0.25, description="Confidence threshold (0-1)"),
@@ -130,7 +130,7 @@ async def predict_image(
 import requests
 from fastapi import Body
 
-@app.post("/predict_url", response_model=PredictionResponse)
+@app.post("/usc_api/predict_url", response_model=PredictionResponse)
 async def predict_image_from_url(
     url: str = Body(..., embed=True),
     conf: float = Query(0.25),

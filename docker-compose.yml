@@ -24,7 +24,7 @@ services:
       - "6504:5000"
     volumes:
       - ./python:/app
-    command: [ "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000", "--reload" ]
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
 
   nodejs:
     image: node:20
