@@ -399,7 +399,7 @@
 
     async function showChartOverlay(x) {
       try {
-        const result = await fetch(`/usc/api/points/${x.id}`);
+        const result = await fetch(`/usc/api/point_chart/${x.id}`);
         const p = await result.json();
 
         console.log(p);

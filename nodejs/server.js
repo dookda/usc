@@ -58,6 +58,23 @@ app.get('/usc/api/points/:id', (req, res) => {
         });
 });
 
+app.get('/usc/api/point_chart/:id', (req, res) => {
+        const id = req.params.id;
+        const sql = `SELECT * FROM class_and_pollution WHERE id = $1`;
+        pool.query(sql, [id], (err, result) => {
+                if (err) {
+                        console.error(err);
+                        res.status(500).json({ error: 'Database query error' });
+                } else {
+                        if (result.rows.length === 0) {
+                                res.status(404).json({ error: 'Point not found' });
+                        } else {
+                                res.json(result.rows[0]);
+                        }
+                }
+        });
+});
+
 app.get('/usc/api/sathonpoints', (req, res) => {
         //create geojson data from class_and_pollution table and select id column only
         const sql = `SELECT jsonb_build_object(
