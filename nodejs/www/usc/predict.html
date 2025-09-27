@@ -167,13 +167,18 @@
 
                 async function predictFromStreetView(url) {
                         console.log("Sending URL to prediction API:", url);
-                        const res = await fetch("https://geodev.fun/usc_api/predict_url", {
+                        // const res = await fetch("https://geodev.fun/usc_api/predict_url", {
+                        const res = await fetch("http://localhost:6504/usc_api/predict_url2", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ url })
                         });
                         const data = await res.json();
                         console.log("Predictions:", data);
+
+                        //  add img src 
+                        document.getElementById("annotated_image").src = data.annotated_image;
+
                         // document.getElementById("result").src = data.annotated_image_base64;
                         document.getElementById("class").innerText = `${data.boxes[0].class_name}`;
                         document.getElementById("conf").innerText = `${data.boxes[0].confidence.toFixed(3)}`;
@@ -250,7 +255,7 @@
                                                 <div><b>Label:</b>&nbsp;<span id="class"></span></div>
                                                 <div><b>Conf:</b>&nbsp;<span id="conf"></span></div>
 
-                                                <img src="${url}"
+                                                <img id="annotated_image"
                                                 alt="H/W Ratio"
                                                 style="width:100%;margin-top:8px;border-radius:6px;box-shadow:0 2px 6px #ccc;">
                                                 <hr>
